@@ -1,6 +1,6 @@
 ---
 title: "Tarefa 1 - Análise dos Dados"
-author: "Leonardo Martelli e Marecello Fabrizio"
+author: "Leonardo Martelli e Marcello Fabrizio"
 date: "06/09/2021"
 output:
   html_document:
@@ -28,7 +28,7 @@ library(stringr)
 csv_data = read.csv("Dry_Bean_Dataset.csv",header=T, sep=";", na.strings="?", dec=",")
 str(csv_data)
 ```
-O dataset contém 13.661 obeservações, tratando de 17 variaveis. Das 17 variáveis, apenas 1 delas não traz dados numéricos. A única variável categórica é a que traz as classes do conjunto de dados, nomeada de *Class*
+O dataset contém 13.661 obeservações, tratando de 17 variaveis. Das 17 variáveis, apenas 1 delas não traz dados numéricos. A única variável categórica é a que traz as classes do conjunto de dados, nomeada de *Class*.
 
 ### 2- Altere a variável do tipo do feijão (Class) para um factor. Utilizando um comando mostre como estimar o número de classes existentes. 
 
@@ -70,7 +70,7 @@ for(i in 1:16){
 
 ```
 
-Para facilitar a visualização de se as variáveis contêm *outliers*, gráficos do tipo *boxplot* pode auxiliar. Os seguintes gráficos foram gerados em grupos de 4, com exceção da variável *Class*, a qual é o fator de classificação.
+Para facilitar a visualização de se as variáveis contêm *outliers*, gráficos do tipo *boxplot* podem auxiliar. Os seguintes gráficos foram gerados em grupos de 4, com exceção da variável *Class*, a qual é o fator de classificação.
 
 ``` {r}
 par(mfrow=c(2,2))
@@ -95,6 +95,47 @@ for(i in 9:12){
 
 par(mfrow=c(2,2))
 for(i in 13:16){
+  boxplot(csv_data[,i],
+          main = names(csv_data)[i])
+}
+```
+### 5 - Utilizando um gráfico boxplot por variável x classe (organize em 3 colunas), diga qual é a variável que teria maior poder de discriminação? Justifique a sua escolha. 
+
+``` {r}
+par(mfrow=c(1,3))
+for(i in 1:3){
+  boxplot(csv_data[,i],
+          main = names(csv_data)[i])
+}
+
+
+par(mfrow=c(1,3))
+for(i in 4:6){
+  boxplot(csv_data[,i],
+          main = names(csv_data)[i])
+}
+
+
+par(mfrow=c(1,3))
+for(i in 7:9){
+  boxplot(csv_data[,i],
+          main = names(csv_data)[i])
+}
+
+par(mfrow=c(1,3))
+for(i in 10:12){
+  boxplot(csv_data[,i],
+          main = names(csv_data)[i])
+}
+
+par(mfrow=c(1,3))
+for(i in 13:15){
+  boxplot(csv_data[,i],
+          main = names(csv_data)[i])
+}
+
+par(mfrow=c(1,3))
+for(i in 16:16){
   boxplot(csv_data[,i],
           main = names(csv_data)[i])
 }
