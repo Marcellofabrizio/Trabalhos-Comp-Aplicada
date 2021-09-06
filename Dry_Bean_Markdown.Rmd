@@ -1,0 +1,101 @@
+---
+title: "Tarefa 1 - Análise dos Dados"
+author: "Leonardo Martelli e Marecello Fabrizio"
+date: "06/09/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 0 - Limpeza do ambiente e carregamento de pacotes
+
+```{r packs, warning=FALSE, message = FALSE}
+rm(list=ls())
+
+library('ggplot2')
+library('gridExtra')
+library('GGally')
+library(stringr)
+```
+
+### 1- Carregue a base de dados e mostre a estrutura do dataset (str()). Comente sobre o número de amostras, de variáveis (e seu tipo). O arquivo do dataset não pode ser modificado de forma alguma. A leitura deverá ser realizada de tal maneira qualquer característica dos dados
+
+```{r csv_data}
+csv_data = read.csv("Dry_Bean_Dataset.csv",header=T, sep=";", na.strings="?", dec=",")
+str(csv_data)
+```
+O dataset contém 13.661 obeservações, tratando de 17 variaveis. Das 17 variáveis, apenas 1 delas não traz dados numéricos. A única variável categórica é a que traz as classes do conjunto de dados, nomeada de *Class*
+
+### 2- Altere a variável do tipo do feijão (Class) para um factor. Utilizando um comando mostre como estimar o número de classes existentes. 
+
+```{r factor}
+csv_data$Class = factor(csv_data$Class)
+
+nome_classes = unique(csv_data$Class)
+
+print(levels(nome_classes))
+
+num_classes = length(nome_classes)
+
+```
+
+O conjunto de dados contém `r num_classes` classes.
+
+### 3- Quantas amostras existem por classe? Use um gráfico de barras para ilustrar as quantidades.
+
+``` {r classes}
+
+classes_summary = summary(csv_data$Class)
+
+print(classes_summary)
+
+ggplot(csv_data, aes(Class, fill = Class)) + geom_bar() + theme(legend.position = "none")
+
+```
+
+### 4- Alguma variável apresenta outliers? Tem alguma que não apresenta? Se as amostras  com outliers fossem removidas, reduziria em quanto o número de amostras? Alguma classe sofreria uma redução maior do que a outra? Crie um boxplot por variável (boxplot()) para auxiliar na explicação. Não remova os outliers para as próximas etapas!
+
+```{r}
+
+for(i in 1:16){
+  outliers = which(csv_data[,i] %in% boxplot.stats(csv_data[,i])$out)
+  if(length(outliers) > 0){
+    print(str_interp("Coluna ${names(csv_data[i])} contém ${length(outliers)} outliers"))
+  }
+}
+
+```
+
+Para facilitar a visualização de se as variáveis contêm *outliers*, gráficos do tipo *boxplot* pode auxiliar. Os seguintes gráficos foram gerados em grupos de 4, com exceção da variável *Class*, a qual é o fator de classificação.
+
+``` {r}
+par(mfrow=c(2,2))
+for(i in 1:4){
+  boxplot(csv_data[,i],
+          main = names(csv_data)[i])
+}
+
+
+par(mfrow=c(2,2))
+for(i in 5:8){
+  boxplot(csv_data[,i],
+          main = names(csv_data)[i])
+}
+
+
+par(mfrow=c(2,2))
+for(i in 9:12){
+  boxplot(csv_data[,i],
+          main = names(csv_data)[i])
+}
+
+par(mfrow=c(2,2))
+for(i in 13:16){
+  boxplot(csv_data[,i],
+          main = names(csv_data)[i])
+}
+```
