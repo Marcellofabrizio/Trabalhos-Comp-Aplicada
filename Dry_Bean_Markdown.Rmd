@@ -24,18 +24,18 @@ library(stringr)
 
 ### 1- Carregue a base de dados e mostre a estrutura do dataset (str()). Comente sobre o número de amostras, de variáveis (e seu tipo). O arquivo do dataset não pode ser modificado de forma alguma. A leitura deverá ser realizada de tal maneira qualquer característica dos dados
 
-```{r csv_data}
-csv_data = read.csv("Dry_Bean_Dataset.csv",header=T, sep=";", na.strings="?", dec=",")
-str(csv_data)
+```{r beans_data}
+beans_data = read.csv("Dry_Bean_Dataset.csv",header=T, sep=";", na.strings="?", dec=",")
+str(beans_data)
 ```
 O dataset contém 13.661 obeservações, tratando de 17 variaveis. Das 17 variáveis, apenas 1 delas não traz dados numéricos. A única variável categórica é a que traz as classes do conjunto de dados, nomeada de *Class*.
 
 ### 2- Altere a variável do tipo do feijão (Class) para um factor. Utilizando um comando mostre como estimar o número de classes existentes. 
 
 ```{r factor}
-csv_data$Class = factor(csv_data$Class)
+beans_data$Class = factor(beans_data$Class)
 
-nome_classes = unique(csv_data$Class)
+nome_classes = unique(beans_data$Class)
 
 print(levels(nome_classes))
 
@@ -49,11 +49,11 @@ O conjunto de dados contém `r num_classes` classes.
 
 ``` {r classes}
 
-classes_summary = summary(csv_data$Class)
+classes_summary = summary(beans_data$Class)
 
 print(classes_summary)
 
-ggplot(csv_data, aes(Class, fill = Class)) + geom_bar() + theme(legend.position = "none")
+ggplot(beans_data, aes(Class, fill = Class)) + geom_bar() + theme(legend.position = "none")
 
 ```
 
@@ -62,9 +62,9 @@ ggplot(csv_data, aes(Class, fill = Class)) + geom_bar() + theme(legend.position 
 ```{r}
 
 for(i in 1:16){
-  outliers = which(csv_data[,i] %in% boxplot.stats(csv_data[,i])$out)
+  outliers = which(beans_data[,i] %in% boxplot.stats(beans_data[,i])$out)
   if(length(outliers) > 0){
-    print(str_interp("Coluna ${names(csv_data[i])} contém ${length(outliers)} outliers"))
+    print(str_interp("Coluna ${names(beans_data[i])} contém ${length(outliers)} outliers"))
   }
 }
 
@@ -75,68 +75,124 @@ Para facilitar a visualização de se as variáveis contêm *outliers*, gráfico
 ``` {r}
 par(mfrow=c(2,2))
 for(i in 1:4){
-  boxplot(csv_data[,i],
-          main = names(csv_data)[i])
+  boxplot(beans_data[,i],
+          main = names(beans_data)[i])
 }
 
 
 par(mfrow=c(2,2))
 for(i in 5:8){
-  boxplot(csv_data[,i],
-          main = names(csv_data)[i])
+  boxplot(beans_data[,i],
+          main = names(beans_data)[i])
 }
 
 
 par(mfrow=c(2,2))
 for(i in 9:12){
-  boxplot(csv_data[,i],
-          main = names(csv_data)[i])
+  boxplot(beans_data[,i],
+          main = names(beans_data)[i])
 }
 
 par(mfrow=c(2,2))
 for(i in 13:16){
-  boxplot(csv_data[,i],
-          main = names(csv_data)[i])
+  boxplot(beans_data[,i],
+          main = names(beans_data)[i])
 }
 ```
 ### 5 - Utilizando um gráfico boxplot por variável x classe (organize em 3 colunas), diga qual é a variável que teria maior poder de discriminação? Justifique a sua escolha. 
 
 ``` {r}
-par(mfrow=c(1,3))
+colors=c("red", "green", "blue")
+
+par(mfrow=c(1,3), cex=0.5)
 for(i in 1:3){
-  boxplot(csv_data[,i],
-          main = names(csv_data)[i])
+  plot <- boxplot(beans_data[,i] ~ beans_data$Class, col=colors, xlab = "", ylab="", main = names(beans_data)[i], xaxt = "n",  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =10)
+  text(x = 1:num_classes,
+       labels = nome_classes,
+       par("usr")[3],
+       xpd = T,
+       ## Rotate the labels by 35 degrees.
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
 }
 
-
-par(mfrow=c(1,3))
+par(mfrow=c(1,3), cex=0.5)
 for(i in 4:6){
-  boxplot(csv_data[,i],
-          main = names(csv_data)[i])
+  plot <- boxplot(beans_data[,i] ~ beans_data$Class, col=colors, xlab = "", ylab="", main = names(beans_data)[i], xaxt = "n",  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =10)
+  text(x = 1:num_classes,
+       labels = nome_classes,
+       par("usr")[3],
+       xpd = T,
+       ## Rotate the labels by 35 degrees.
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
 }
 
-
-par(mfrow=c(1,3))
-for(i in 7:9){
-  boxplot(csv_data[,i],
-          main = names(csv_data)[i])
+par(mfrow=c(1,3), cex=0.5)
+for(i in 7:8){
+  plot <- boxplot(beans_data[,i] ~ beans_data$Class, col=colors, xlab = "", ylab="", main = names(beans_data)[i], xaxt = "n",  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =10)
+  text(x = 1:num_classes,
+       labels = nome_classes,
+       par("usr")[3],
+       xpd = T,
+       ## Rotate the labels by 35 degrees.
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
 }
 
-par(mfrow=c(1,3))
-for(i in 10:12){
-  boxplot(csv_data[,i],
-          main = names(csv_data)[i])
+par(mfrow=c(1,3), cex=0.5)
+for(i in 9:11){
+  plot <- boxplot(beans_data[,i] ~ beans_data$Class, col=colors, xlab = "", ylab="", main = names(beans_data)[i], xaxt = "n",  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =10)
+  text(x = 1:num_classes,
+       labels = nome_classes,
+       par("usr")[3],
+       xpd = T,
+       ## Rotate the labels by 35 degrees.
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
 }
 
-par(mfrow=c(1,3))
-for(i in 13:15){
-  boxplot(csv_data[,i],
-          main = names(csv_data)[i])
+par(mfrow=c(1,3), cex=0.5)
+for(i in 12:14){
+  plot <- boxplot(beans_data[,i] ~ beans_data$Class, col=colors, xlab = "", ylab="", main = names(beans_data)[i], xaxt = "n",  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =10)
+  text(x = 1:num_classes,
+       labels = nome_classes,
+       par("usr")[3],
+       xpd = T,
+       ## Rotate the labels by 35 degrees.
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
 }
 
-par(mfrow=c(1,3))
-for(i in 16:16){
-  boxplot(csv_data[,i],
-          main = names(csv_data)[i])
+par(mfrow=c(1,3), cex=0.5)
+for(i in 15:16){
+  plot <- boxplot(beans_data[,i] ~ beans_data$Class, col=colors, xlab = "", ylab="", main = names(beans_data)[i], xaxt = "n",  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =10)
+  text(x = 1:num_classes,
+       labels = nome_classes,
+       par("usr")[3],
+       xpd = T,
+       ## Rotate the labels by 35 degrees.
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
 }
 ```
+
+Analisando os boxplots gerados, é possível notar que as classes na variável **ShapeFactor2** apresentam maior distinção entre sí, já que a média dos seus valores não estão tão próximos uns dos outros quanto nas demais variáveis. Portanto, afirmamos que a variável **ShapeFactor2** é a que mais apresenta poder de discriminação.
