@@ -113,7 +113,6 @@ for(i in 1:3){
        labels = nome_classes,
        par("usr")[3],
        xpd = T,
-       ## Rotate the labels by 35 degrees.
        srt = 90,
        adj = 1.2,
        cex = 0.9)
@@ -128,7 +127,6 @@ for(i in 4:6){
        labels = nome_classes,
        par("usr")[3],
        xpd = T,
-       ## Rotate the labels by 35 degrees.
        srt = 90,
        adj = 1.2,
        cex = 0.9)
@@ -143,7 +141,6 @@ for(i in 7:8){
        labels = nome_classes,
        par("usr")[3],
        xpd = T,
-       ## Rotate the labels by 35 degrees.
        srt = 90,
        adj = 1.2,
        cex = 0.9)
@@ -158,7 +155,6 @@ for(i in 9:11){
        labels = nome_classes,
        par("usr")[3],
        xpd = T,
-       ## Rotate the labels by 35 degrees.
        srt = 90,
        adj = 1.2,
        cex = 0.9)
@@ -173,7 +169,6 @@ for(i in 12:14){
        labels = nome_classes,
        par("usr")[3],
        xpd = T,
-       ## Rotate the labels by 35 degrees.
        srt = 90,
        adj = 1.2,
        cex = 0.9)
@@ -188,7 +183,6 @@ for(i in 15:16){
        labels = nome_classes,
        par("usr")[3],
        xpd = T,
-       ## Rotate the labels by 35 degrees.
        srt = 90,
        adj = 1.2,
        cex = 0.9)
@@ -196,3 +190,5 @@ for(i in 15:16){
 ```
 
 Analisando os boxplots gerados, é possível notar que as classes na variável **ShapeFactor2** apresentam maior distinção entre sí, já que a média dos seus valores não estão tão próximos uns dos outros quanto nas demais variáveis. Portanto, afirmamos que a variável **ShapeFactor2** é a que mais apresenta poder de discriminação.
+
+### 6 - Utilizando gráficos de densidade por variável (organize em 3 colunas), é possível fazer alguma afirmação sobre a discriminabilidade de alguma classe? Pode utilizar os boxplots gerados na etapa anterior para auxiliar nas conclusões. 
