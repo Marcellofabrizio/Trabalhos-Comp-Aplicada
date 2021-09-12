@@ -60,7 +60,7 @@ ggplot(beans_data, aes(Class, fill = Class)) + geom_bar() + theme(legend.positio
 
 ### 4- Alguma variável apresenta outliers? Tem alguma que não apresenta? Se as amostras  com outliers fossem removidas, reduziria em quanto o número de amostras? Alguma classe sofreria uma redução maior do que a outra? Crie um boxplot por variável (boxplot()) para auxiliar na explicação. Não remova os outliers para as próximas etapas!
 
-```{r}
+```{r, echo = FALSE}
 
 for(i in 1:16){
   outliers = which(beans_data[,i] %in% boxplot.stats(beans_data[,i])$out)
@@ -73,7 +73,7 @@ for(i in 1:16){
 
 Para facilitar a visualização de se as variáveis contêm *outliers*, gráficos do tipo *boxplot* podem auxiliar. Os seguintes gráficos foram gerados em grupos de 4, com exceção da variável *Class*, a qual é o fator de classificação.
 
-``` {r}
+``` {r, echo = FALSE}
 par(mfrow=c(2,2))
 for(i in 1:4){
   boxplot(beans_data[,i],
@@ -102,7 +102,7 @@ for(i in 13:16){
 ```
 ### 5 - Utilizando um gráfico boxplot por variável x classe (organize em 3 colunas), diga qual é a variável que teria maior poder de discriminação? Justifique a sua escolha. 
 
-``` {r}
+``` {r, echo = FALSE}
 colors=c("red", "green", "blue")
 
 par(mfrow=c(1,3), cex=0.5)
@@ -194,7 +194,7 @@ Analisando os boxplots gerados, é possível notar que as classes na variável *
 
 ### 6 - Utilizando gráficos de densidade por variável (organize em 3 colunas), é possível fazer alguma afirmação sobre a discriminabilidade de alguma classe? Pode utilizar os boxplots gerados na etapa anterior para auxiliar nas conclusões. 
 
-```{r}
+```{r, echo = FALSE}
 p = list()
 for(i in 1:3){
   p[[i]] = ggplot(beans_data, aes_string(x=names(beans_data)[i],fill="Class")) + 
