@@ -19,9 +19,10 @@ rm(list=ls())
 library('ggplot2')
 library('gridExtra')
 library('GGally')
-library('cowplot')
+library(grid)
 library(stringr)
 
+```
 ### 1- Carregue a base de dados e mostre a estrutura do dataset (str()). Comente sobre o número de amostras, de variáveis (e seu tipo). O arquivo do dataset não pode ser modificado de forma alguma. A leitura deverá ser realizada de tal maneira qualquer característica dos dados
 
 ```{r beans_data}
@@ -100,6 +101,7 @@ for(i in 13:16){
           main = names(beans_data)[i])
 }
 ```
+
 ### 5 - Utilizando um gráfico boxplot por variável x classe (organize em 3 colunas), diga qual é a variável que teria maior poder de discriminação? Justifique a sua escolha. 
 
 ``` {r echo = FALSE}
@@ -192,9 +194,10 @@ for(i in 16:16){
 
 Analisando os boxplots gerados, é possível notar que as classes na variável **ShapeFactor2** apresentam maior distinção entre sí, já que a área entre o 1º e 3º quartil dos seus valores não está alinhada com a área respectiva das demais variáveis. Portanto, é possivel concluir que a variável **ShapeFactor2** é a que mais apresenta poder de discriminação.
 
+
 ### 6 - Utilizando gráficos de densidade por variável (organize em 3 colunas), é possível fazer alguma afirmação sobre a discriminabilidade de alguma classe? Pode utilizar os boxplots gerados na etapa anterior para auxiliar nas conclusões. 
 
-```{r echo = FALSE, fig.width=10}
+```{r echo = FALSE, fig.width=20}
 library(gridExtra)
 library(ggplot2)
 
@@ -244,22 +247,59 @@ p = list()
 for(i in 16:16){
   p[[i-15]] = ggplot(beans_data, aes_string(x=names(beans_data)[i],fill="Class")) + 
     geom_density(alpha=0.5,color="darkgray") + 
-    theme(legend.position="top", legend.title = element_blank(), legend.key.size = unit(3, 'mm'))
+    theme(legend.position="top", legend.title = element_blank(), legend.key.size = unit(20, 'mm'))
 }
 do.call(grid.arrange,c(p,ncol=1))
 ```
 
-Com os gráfico de densidade, é possivel perceber que certas classes, no escopo de algumas variavéis especifícas, tem a grande maioria das observações sem contato com nenhuma outra curva de outras classes - por exemplo as instancias de classe **Bombay**, visualizando varivéis como **Area, Perimeter, MajorAxisLength, MinorAxisLength, ConvexArea, EquivDiameter e ShapeFactor1**
+Com os gráfico de densidade, é possivel perceber que certas classes, no escopo de algumas variavéis especifícas, tem a grande maioria das observações sem contato com nenhuma outra curva de outras classes - por exemplo as instancias de classe **Bombay**, visualizando varivéis como **Area, Perimeter, MajorAxisLength, MinorAxisLength, ConvexArea, EquivDiameter e ShapeFactor1**.
+
+Porém como elencado anteriormente, a variável que apresenta visualmente uma discriminação evidente é o **ShapeFactor2**. Pode ser destacado que as medianas de nenhuma caracteristica são alinhadas verticalmente, assim como à area referente ao primeiro desvio padrão da maioria das variavéis estão deslocadas e não se encontram.
 
 
 ### 7- Algumas variável (por classe) possui uma distribuição normal (curva do sino)? É possível verificar numericamente se é verdade? 
 
+Analisando os graficos de densidade gerados na questão 6, pontua-se que há varias variavéis dentro do escopo de classes que são distribuídas normalmente. Por exemplo, para a classe **Bombay**, tem as instâncias com mais váriaveis normalizadas: **Perimeter, MajorAxisLength, AspectRation, EquivDiameter, Roundness e ShapeFactor1**.
+
+Possibilita-se ser verificado numericamente a normalidade, utilizando o teste de **Shapiro-Wilk**:
+
+```{r fig.width=20, fig.height=14}
+
+  pvalue = c()
+  for(i in 1:16){
+    pvalue[i] = shapiro.test(beans_data[beans_data$Class=="BOMBAY",i])$p.value
+  }
+  barplot(pvalue, col = 1:16, space = c(0))
+  title("Bombay")
+  legend("topright", legend = names(beans_data)[1:16],ncol = 4,cex = 0.75, fill = 1:16)
+  abline(h=0.05, col = "Red", lty = 5, lwd = 2)
+
+
+```
+
+E visualizando o gráfico **quantile-quantile**, é possivel visualizar a tendencia de seguir a linha diagonal esperada:
+
+```{r fig.width=20, fig.height=14}
+
+p = list()
+p[[1]] = textGrob("Bombay")
+for(i in 2:17){
+  
+p[[i]] = ggplot(beans_data[beans_data$Class=="BOMBAY",], aes_string(sample=names(beans_data)[i - 1]),color="Class")+
+  ggtitle(names(beans_data)[i - 1]) +
+  stat_qq()+
+  stat_qq_line()
+
+}
+do.call(grid.arrange,c(p))
+
+```
 
 
 ### 8- Utilizando um gráfico de dispersão entre pares de variáveis, diga se existe alguma associação entre variáveis que permite uma maior discriminação?
 
-```{r fig.width=100, fig.height=100}
-ggpairs(beans_data, aes(colour = beans_data$Class, alpha = 0.4))
+```{r fig.width=50, fig.height=50}
+#ggpairs(beans_data, aes(colour = beans_data$Class, alpha = 0.4))
 
 ```
 
@@ -267,6 +307,7 @@ Conforme destacado na questão anterior, as observações de classe **Bombay** n
 
 Algumas combinações mostram uma distinção entre as instancias de classes distintas, como é o caso da variável **AspectRation** com **MajorAxisLength** ou **Perimeter** e do atributo **Convex Area** combinado com **AspectRation** ou **Eccentricity**.
 
-Convex Area e AspectRation e Eccentricity
 
-AspectRation Majoras AxisLength e Perimeter
+### 9- Após ter analisado estas informações, quais considerações você faz sobre este conjunto de dados (ou tarefa)?
+
+O dataset de feijões é um conjunto de dados interessante de trabalhar, uma vez que apresenta variavéis com diferentes dimensões, o que força a termos cuidados maiores com a **plotagem** dos gráficos; número de classes maior que outros conjuntos introdutórios, por exemplo o da **iris** que contém apenas três classes, que nos dá maior variabilidade nos resultados das métricas analisadas - por exemplo normalidade e balanceamento;
