@@ -1,0 +1,348 @@
+---
+title: "Tarefa 1 - Análise dos Dados"
+author: "Leonardo Martelli e Marcello Fabrizio"
+date: "06/09/2021"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup, include=FALSE, out.width=100, echo = TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 0 - Limpeza do ambiente e carregamento de pacotes
+
+```{r packs, warning=FALSE, message = FALSE}
+rm(list=ls())
+
+library('ggplot2')
+library('gridExtra')
+library('GGally')
+library(grid)
+library(stringr)
+
+```
+### 1- Carregue a base de dados e mostre a estrutura do dataset (str()). Comente sobre o número de amostras, de variáveis (e seu tipo). O arquivo do dataset não pode ser modificado de forma alguma. A leitura deverá ser realizada de tal maneira qualquer característica dos dados
+
+```{r beans_data, warning=FALSE, message = FALSE}
+beans_data = read.csv("Dry_Bean_Dataset.csv",header=T, sep=";", na.strings="?", dec=",")
+str(beans_data)
+```
+O dataset contém 13.661 obeservações, tratando de 17 variaveis. Das 17 variáveis, apenas 1 delas não traz dados numéricos. A única variável categórica é a que traz as classes do conjunto de dados, nomeada de *Class*.
+
+### 2- Altere a variável do tipo do feijão (Class) para um factor. Utilizando um comando mostre como estimar o número de classes existentes. 
+
+```{r factor, echo = TRUE}
+beans_data$Class = factor(beans_data$Class)
+
+nome_classes = unique(beans_data$Class)
+
+print(levels(nome_classes))
+
+num_classes = length(nome_classes)
+
+```
+
+O conjunto de dados contém `r num_classes` classes.
+
+### 3- Quantas amostras existem por classe? Use um gráfico de barras para ilustrar as quantidades.
+
+``` {r classes, echo = TRUE, warning=FALSE, message = FALSE}
+
+classes_summary = summary(beans_data$Class)
+
+print(classes_summary)
+
+ggplot(beans_data, aes(Class, fill = Class)) + geom_bar() + theme(legend.position = "none")
+
+```
+
+### 4- Alguma variável apresenta outliers? Tem alguma que não apresenta? Se as amostras  com outliers fossem removidas, reduziria em quanto o número de amostras? Alguma classe sofreria uma redução maior do que a outra? Crie um boxplot por variável (boxplot()) para auxiliar na explicação. Não remova os outliers para as próximas etapas!
+
+```{r, echo = TRUE, warning=FALSE, message = FALSE}
+outliers = c()
+for(i in 1:16){
+  outliers = which(beans_data[,i] %in% boxplot.stats(beans_data[,i])$out)
+  if(length(outliers) > 0){
+    print(str_interp("Coluna ${names(beans_data[i])} contém ${length(outliers)} outliers"))
+  }
+}
+```
+
+Para facilitar a visualização de se as variáveis contêm *outliers*, gráficos do tipo *boxplot* podem auxiliar. Os seguintes gráficos foram gerados em grupos de 4, com exceção da variável *Class*, a qual é o fator de classificação.
+
+
+``` {r echo = TRUE, fig.width=10, fig.height=10, warning=FALSE, message = FALSE}
+par(mfrow=c(2,3))
+for(i in 1:6){
+  boxplot(beans_data[,i],
+          main = names(beans_data)[i])
+}
+
+
+par(mfrow=c(2,3))
+for(i in 7:12){
+  boxplot(beans_data[,i],
+          main = names(beans_data)[i])
+}
+
+
+par(mfrow=c(2,3))
+for(i in 13:16){
+  boxplot(beans_data[,i],
+          main = names(beans_data)[i])
+}
+```
+
+### 5 - Utilizando um gráfico boxplot por variável x classe (organize em 3 colunas), diga qual é a variável que teria maior poder de discriminação? Justifique a sua escolha. 
+
+``` {r echo = TRUE, warning=FALSE, message = FALSE}
+colors=c("red", "green", "blue")
+
+par(mfrow=c(1,3), cex=0.5)
+for(i in 1:3){
+  plot <- boxplot(beans_data[,i] ~ beans_data$Class, 
+                  col=colors, xlab = "", 
+                  ylab="", 
+                  main = names(beans_data)[i], 
+                  xaxt = "n",  
+                  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =20)
+  text(x = 1:num_classes,
+       labels = nome_classes,
+       par("usr")[3],
+       xpd = T,
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
+}
+
+par(mfrow=c(1,3), cex=0.5)
+for(i in 4:6){
+  plot <- boxplot(beans_data[,i] ~ beans_data$Class, 
+                  col=colors, xlab = "", 
+                  ylab="", 
+                  main = names(beans_data)[i], 
+                  xaxt = "n",  
+                  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =20)
+  text(x = 1:num_classes,
+       labels = nome_classes,
+       par("usr")[3],
+       xpd = T,
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
+}
+
+par(mfrow=c(1,3), cex=0.5)
+for(i in 7:9){
+  plot <- boxplot(beans_data[,i] ~ beans_data$Class, 
+                  col=colors, xlab = "", 
+                  ylab="", 
+                  main = names(beans_data)[i], 
+                  xaxt = "n",  
+                  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =20)
+  text(x = 1:num_classes,
+       labels = nome_classes,
+       par("usr")[3],
+       xpd = T,
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
+}
+
+par(mfrow=c(1,3), cex=0.5)
+for(i in 10:12){
+  plot <- boxplot(beans_data[,i] ~ beans_data$Class, 
+                  col=colors, xlab = "", 
+                  ylab="", 
+                  main = names(beans_data)[i], 
+                  xaxt = "n",  
+                  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =20)
+  text(x = 1:num_classes,
+       labels = nome_classes,
+       par("usr")[3],
+       xpd = T,
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
+}
+
+par(mfrow=c(1,3), cex=0.5)
+for(i in 13:15){
+  plot <- boxplot(beans_data[,i] ~ beans_data$Class, 
+                  col=colors, xlab = "", 
+                  ylab="", 
+                  main = names(beans_data)[i], 
+                  xaxt = "n",  
+                  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =20)
+  text(x = 1:num_classes,
+       labels = nome_classes,
+       par("usr")[3],
+       xpd = T,
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
+}
+
+par(mfrow=c(1,3), cex=0.5)
+for(i in 16:16){
+  plot <- boxplot(beans_data[,i] ~ beans_data$Class, 
+                  col=colors, xlab = "", 
+                  ylab="", 
+                  main = names(beans_data)[i], 
+                  xaxt = "n",  
+                  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =20)
+  text(x = 1:num_classes,
+       labels = nome_classes,
+       par("usr")[3],
+       xpd = T,
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
+}
+```
+
+Analisando os boxplots gerados, é possível notar que as classes na variável **ShapeFactor2** apresentam maior distinção entre sí, já que a área entre o 1º e 3º quartil dos seus valores está menos linhada entre os quartis das classes se comparado com as demais variáveis. Portanto, é possivel concluir que a variável **ShapeFactor2** é a que mais apresenta poder de discriminação.
+
+
+### 6 - Utilizando gráficos de densidade por variável (organize em 3 colunas), é possível fazer alguma afirmação sobre a discriminabilidade de alguma classe? Pode utilizar os boxplots gerados na etapa anterior para auxiliar nas conclusões. 
+
+```{r echo = TRUE, fig.width=20, warning=FALSE, message = FALSE}
+library(gridExtra)
+library(ggplot2)
+
+p = list()
+for(i in 1:3){
+  p[[i]] = ggplot(beans_data, aes_string(x=names(beans_data)[i],fill="Class")) + 
+    geom_density(alpha=0.5,color="darkgray") + 
+    theme(legend.position="none", 
+          legend.title = element_blank())
+}
+do.call(grid.arrange,c(p,ncol=3))
+
+p = list()
+for(i in 4:6){
+  p[[i - 3]] = ggplot(beans_data, aes_string(x=names(beans_data)[i],fill="Class")) + 
+    geom_density(alpha=0.5,color="darkgray") + 
+    theme(legend.position="none", 
+          legend.title = element_blank())
+}
+
+do.call(grid.arrange,c(p,ncol=3))
+
+p = list()
+for(i in 7:9){
+  p[[i - 6]] = ggplot(beans_data, aes_string(x=names(beans_data)[i],fill="Class")) + 
+    geom_density(alpha=0.5,color="darkgray") + 
+    theme(legend.position="none", 
+          legend.title = element_blank())
+}
+do.call(grid.arrange, c(p,ncol=3))
+
+p = list()
+for(i in 10:12){
+  p[[i-9]] = ggplot(beans_data, aes_string(x=names(beans_data)[i],fill="Class")) + 
+    geom_density(alpha=0.5,color="darkgray") + 
+    theme(legend.position="none", 
+          legend.title = element_blank())
+}
+do.call(grid.arrange,c(p,ncol=3))
+
+p = list()
+for(i in 13:15){
+  p[[i-12]] = ggplot(beans_data,
+                     aes_string(x=names(beans_data)[i],fill="Class")) + 
+    geom_density(alpha=0.5,color="darkgray") + 
+    theme(legend.position="none", 
+          legend.title = element_blank())
+}
+
+do.call(grid.arrange,c(p,ncol=3))
+
+p = list()
+for(i in 16:16){
+  p[[i-15]] = ggplot(beans_data, aes_string(x=names(beans_data)[i],fill="Class")) + 
+    geom_density(alpha=0.5,color="darkgray") + 
+    theme(legend.position="top", 
+          legend.title = element_blank(), 
+          legend.key.size = unit(20, 'mm'))
+}
+do.call(grid.arrange,c(p,ncol=1))
+```
+
+Com os gráfico de densidade, é possivel perceber que certas classes, no escopo de algumas variavéis especifícas, tem a grande maioria das observações sem contato com nenhuma outra curva de outras classes - por exemplo as instancias de classe **Bombay**, visualizando varivéis como **Area, Perimeter, MajorAxisLength, MinorAxisLength, ConvexArea, EquivDiameter e ShapeFactor1**.
+
+Porém como elencado anteriormente, a variável que apresenta visualmente uma discriminação evidente é o **ShapeFactor2**. Pode ser destacado que as medianas de nenhuma caracteristica são alinhadas verticalmente, assim como à area referente ao primeiro desvio padrão da maioria das variavéis estão deslocadas e não se encontram.
+
+
+### 7- Alguma variável (por classe) possui uma distribuição normal (curva do sino)? É possível verificar numericamente se é verdade? 
+
+Analisando os graficos de densidade gerados na questão 6, pontua-se que há varias variavéis dentro do escopo de classes que são distribuídas normalmente. Por exemplo, para a classe **Bombay**, tem as instâncias com mais váriaveis normalizadas: **Perimeter, MajorAxisLength, AspectRation, EquivDiameter, Roundness e ShapeFactor1**.
+
+Possibilita-se ser verificado numericamente a normalidade, utilizando o teste de **Shapiro-Wilk**:
+
+```{r fig.width=20, fig.height=14, warning=FALSE, message = FALSE, echo = TRUE}
+
+  pvalue = c()
+  for(i in 1:16){
+    pvalue[i] = shapiro.test(beans_data[beans_data$Class=="BOMBAY",i])$p.value
+  }
+  barplot(pvalue, col = 1:16, space = c(0))
+  title("Bombay")
+  legend("topright", legend = names(beans_data)[1:16],ncol = 4,cex = 0.75, fill = 1:16)
+  abline(h=0.05, col = "Red", lty = 5, lwd = 2)
+
+
+```
+A maioria dos valores estão acima da porcentagem de .05, portanto podemos presumir a normalidade dessas variáveis.
+E visualizando o gráfico **quantile-quantile**, é possivel visualizar a tendencia de seguir a linha diagonal esperada:
+
+```{r fig.width=20, fig.height=14, warning=FALSE, message = FALSE, echo = TRUE}
+
+p = list()
+p[[1]] = textGrob("Bombay")
+for(i in 2:17){
+  
+p[[i]] = ggplot(beans_data[beans_data$Class=="BOMBAY",], 
+                aes_string(sample=names(beans_data)[i - 1]),
+                color="Class")+
+  ggtitle(names(beans_data)[i - 1]) +
+  stat_qq()+
+  stat_qq_line()
+
+}
+do.call(grid.arrange,c(p))
+
+```
+
+
+### 8- Utilizando um gráfico de dispersão entre pares de variáveis, diga se existe alguma associação entre variáveis que permite uma maior discriminação?
+
+```{r fig.width=50, fig.height=50, echo = TRUE, warning=FALSE, message = FALSE}
+ggpairs(beans_data, columns = 1:6, aes(colour = beans_data$Class, alpha = 0.4))
+ggpairs(beans_data, columns = 7:12, aes(colour = beans_data$Class, alpha = 0.4))
+ggpairs(beans_data, columns = 13:16, aes(colour = beans_data$Class, alpha = 0.4))
+```
+
+Conforme destacado na questão anterior, as observações de classe **Bombay** nos gráficos de disperção de duplas mostra que há um destaque para as amostras em questão. Há variaveis com correlação de quase valor 1, formando uma linha no grafico, como é o caso das caracteristicas **ConvexArea** e **Area**.
+
+Algumas combinações mostram uma distinção entre as instancias de classes distintas, como é o caso da variável **AspectRation** com **MajorAxisLength** ou **Perimeter** e do atributo **Convex Area** combinado com **AspectRation** ou **Eccentricity**.
+
+
+### 9- Após ter analisado estas informações, quais considerações você faz sobre este conjunto de dados (ou tarefa)?
+
+O dataset de feijões é um conjunto de dados interessante de trabalhar, uma vez que apresenta variavéis com diferentes dimensões, o que força a termos cuidados maiores com a **plotagem** dos gráficos; número de classes maior que outros conjuntos introdutórios, por exemplo o da **iris** que contém apenas três classes, que nos dá maior variabilidade nos resultados das métricas analisadas - por exemplo normalidade e balanceamento. Além disso, o dataset, por possuir uma quantidade que pode ser considerada pequena de varíaveis, facilita a pesquisa e se torna curioso de trabalhar sobre, permitindo que apliquemos as técnicas de análise de dados vistas em aula de maneira que possamos reforçá-las e melhorar nossa familiaridade com as ferramentas relacionadas.
