@@ -249,18 +249,11 @@ A classe Bombay apresenta um maior poder de discriminação comparada com as dem
 ### 7 - Realize a projeção do dataset utilizando PCA. Explique as características dos componentes principais estimados. O que se pode explicar sobre os componentes principais utilizando o gráfico biplot. Apresente as características básicas (summary) dos dados.
 
 ```{r PCA, warning=FALSE, message=FALSE}
-sigma = cov(beans_data[,1:9])
-eigen = eigen(sigma)
-
-print(eigen)
-
 pca = prcomp(beans_data[,1:9], center=TRUE, scale=TRUE)
 
-summary(pca)
+pca$rotation
+pca$sdev
 
-predicted_data = predict(pca, beans_data)
-
-summary(predicted_data)
-
-biplot(pca,xlabs = rep("", nrow(beans_data[,1:9])))
+biplot(pca,xlabs = rep("", nrow(beans_data)))
 ```
+Analaziando os valores da matriz de valores dos PCAs, nota-se que PC1 afeta diretamente as varíaveis Area, AspectRation, Eccentricity
