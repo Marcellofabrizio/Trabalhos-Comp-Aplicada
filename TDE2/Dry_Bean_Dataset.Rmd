@@ -25,6 +25,8 @@ library(grid)
 library(stringr)
 library(corrplot)
 library(caret)
+library(ggfortify)
+library(qcc)
 ```
 
 ### 1 - Carregue a base de dados e mostre a estrutura do dataset (str()). O arquivo do dataset não pode ser modificado de forma alguma. A leitura deverá tratar qualquer característica do arquivo.
@@ -198,7 +200,7 @@ corrplot(correlation_matrix)
 
 summary(beans_data)
 ```
-Foi utilizada a função findCorrelation para obter os indices que denotam as colunas a serem removidas. Ela os obtem examinando a correlação média de cada variável em um par de variáveis, e remove a variável com correlação acima da taxa de corte. 
+Foi utilizada a função findCorrelation para obter os indices que denotam as colunas a serem removidas. Ela os obtem examinando a correlação média de cada variável em um par de variáveis, e remove a variável com correlação acima da taxa de corte. Foram removidas as variáveis com correlção maior que 0.95, ou seja, aquelas que possuiam uma alta correlação. Em alguns casos, variáveis com alta correlação acabam por não fornecer muita informação sobre o conjunto de dados estudados, ou seja, um par de varíaveis pode estar fornecendo a mesma informação. Entretanto, devemos tomar cuidado ao remover varíaveis, pois correlação não implica causalidade. De forma geral isso pode ser visto como um caso da Navalha de Occam, onde o modelo mais simples, ou seja, com menos variáveis, é preferido.  
 
 ### 6 - Plote um gráfico boxplot ou de densidade por variável x classe (organize em 3 colunas). Discuta qual é a variável que teria maior poder de discriminação? Existe alguma classe que pode ser classificada mais facilmente? Justifique a sua escolha.
 
@@ -244,16 +246,34 @@ for(i in 10){
 
 do.call(grid.arrange,c(p,ncol=1))
 ```
-A classe Bombay apresenta um maior poder de discriminação comparada com as demais.
+Analizando os resultados, percebemos que a variável ShapeFactor2 possui um alto poder de discriminação das classes, pois podemos notar a separação das médias das densidades. Essa discriminação também é vista nas variáveis roudness e Area, porem em um nível menor se comparadas a ShapeFactor2.
 
 ### 7 - Realize a projeção do dataset utilizando PCA. Explique as características dos componentes principais estimados. O que se pode explicar sobre os componentes principais utilizando o gráfico biplot. Apresente as características básicas (summary) dos dados.
 
 ```{r PCA, warning=FALSE, message=FALSE}
+
+covariance = cov(scale(beans_data[,1:9]))
+eig = eigen(covariance)  
+
+eigen_values  = eig$values
+eigen_vectors = eig$vectors
+
+print(eig)
+
+barplot(eig$values,ylab  = "Variância",xlab = "Componente Principal",names.arg =1:9)
+
 pca = prcomp(beans_data[,1:9], center=TRUE, scale=TRUE)
 
-pca$rotation
 pca$sdev
 
+explained_variance = pca$sdev^2 / sum(pca$sdev^2)
+
 biplot(pca,xlabs = rep("", nrow(beans_data)))
+
+pareto.chart(
+  explained_variance,
+  x = c(1:9)  
+)
+
 ```
 Analaziando os valores da matriz de valores dos PCAs, nota-se que PC1 afeta diretamente as varíaveis Area, AspectRation, Eccentricity
