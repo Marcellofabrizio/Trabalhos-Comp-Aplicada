@@ -26,7 +26,6 @@ library(stringr)
 library(corrplot)
 library(caret)
 library(ggfortify)
-library(qcc)
 ```
 
 ### 1 - Carregue a base de dados e mostre a estrutura do dataset (str()). O arquivo do dataset não pode ser modificado de forma alguma. A leitura deverá tratar qualquer característica do arquivo.
@@ -259,21 +258,30 @@ eigen_values  = eig$values
 eigen_vectors = eig$vectors
 
 print(eig)
-
-barplot(eig$values,ylab  = "Variância",xlab = "Componente Principal",names.arg =1:9)
-
 pca = prcomp(beans_data[,1:9], center=TRUE, scale=TRUE)
 
-pca$sdev
+summary(pca)
 
 explained_variance = pca$sdev^2 / sum(pca$sdev^2)
 
 biplot(pca,xlabs = rep("", nrow(beans_data)))
 
-pareto.chart(
-  explained_variance,
-  x = c(1:9)  
+barplot (
+  explained_variance, 
+  names.arg=1:9, 
+  main = "Variância",
+  xlab = "Componentes Principais",
+  ylab = "Variância Explicada",
+  col ="steelblue"
 )
 
+lines (
+  x = 1:9, 
+  explained_variance, 
+  type="b", 
+  pch=19, 
+  col = "red"
+)
 ```
-Analaziando os valores da matriz de valores dos PCAs, nota-se que PC1 afeta diretamente as varíaveis Area, AspectRation, Eccentricity
+
+Analizando o gráfico resultante, temos que PC1 explica cerca de 50% da variância.
