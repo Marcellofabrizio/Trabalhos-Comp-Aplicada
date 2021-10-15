@@ -49,22 +49,12 @@ ggplot(beans_data, aes(Class, fill = Class)) + geom_bar() + theme(legend.positio
 ### 4 - Realize a normalização dos dados via Z-score. Plote um boxplot para ilustrar a distribuição de cada variável. Mostre as estatísticas de cada variável (summary). 
 ```{r normalization, warning=FALSE, message=FALSE}
 
+normalized_data = preProcess(beans_data, method=c("center", "scale"))
 
-for (var in names(beans_data[1:16])) {
-  mean    = mean(beans_data[[var]])
-  sd      = sd(beans_data[[var]])
-  z_score = (beans_data[[var]] - mean)/sd
-  
-  beans_data[[var]] = z_score
-}
-
-#scale obtem o mesmo resultado do que acima
-#z_score = as.data.frame(scale(beans_data[,1:16]))
-
+beans_data = predict(normalized_data, beans_data)
 summary(beans_data)
 
 classes = unique(beans_data$Class)
-
 num_classes = length(classes)
 
 colors=c("red", "green", "blue")
@@ -191,6 +181,9 @@ correlation_matrix = cor(beans_data[1:16])
 
 strong_correlations = findCorrelation(correlation_matrix, cutoff=0.95)
 
+#Variáveis que serão removidas devido a sua alta correlação
+names(beans_data[,strong_correlations])
+
 if(length(strong_correlations) > 0) {
   beans_data[,strong_correlations] = NULL
 }
@@ -251,15 +244,9 @@ Analizando os resultados, percebemos que a variável ShapeFactor2 possui um alto
 
 ```{r PCA, warning=FALSE, message=FALSE}
 
-covariance = cov(scale(beans_data[,1:9]))
-eig = eigen(covariance)  
-
-eigen_values  = eig$values
-eigen_vectors = eig$vectors
-
-print(eig)
 pca = prcomp(beans_data[,1:9], center=TRUE, scale=TRUE)
 
+print(pca)
 summary(pca)
 
 explained_variance = pca$sdev^2 / sum(pca$sdev^2)
@@ -282,6 +269,97 @@ lines (
   pch=19, 
   col = "red"
 )
+
+cumpro <- cumsum(pca$sdev^2 / sum(pca$sdev^2))
+plot(cumpro[1:9], xlab = "Componentes Principais", ylab = "Variância Explicada", main = "Gŕafico de Variância")
 ```
 
-Analizando o gráfico resultante, temos que PC1 explica cerca de 50% da variância.
+Interpretando o gráfico biplot resultante e as variâncias das variáveis, temos que as variáveis Area, AspectRatio e Eccentricity influenciam positivamente a proporção da variância de PC1, enquanto as demais afetam negativamente. Podemos visualizar isso analisando os vetores do gráfico biplot, onde notamos que as variáveis que afetam positivamente estão alinhadas com o eixo de PC1, apontando em direção positiva, enquanto as que afetam negativamente estão apontando para a direção negativa. Para PC2, temos que as variáveis Area, Extent, Solidity e roundness a afetam positivamente. 
+
+Nota-se que a variável Area afeta positivamente ambos PC1 e PC2. Podemos ver essa relação no gráfico, onde Area aponta em direção positva a PC1 e PC2.
+
+Temos também que PC1 explica 50% da varíancia do conjunto.
+
+### 8 - Analise o dataset projetado com o auxílio do gráfico de boxplot por classe (igual ao do item 6).  Compare com o resultado do item 6. Se quiser, pode gerar um gráfico de espalhamento para auxiliar na explicação. 
+
+```{r comparing, warning=FALSE, message=FALSE}
+#thresh = 1.0 não reduz dimensionalidade
+pca_params = preProcess(beans_data, method=c("center", "scale", "pca"), thresh = 1.0)
+
+projected_data = predict(pca_params, beans_data)
+summary(projected_data)
+
+names(projected_data)
+
+colors=c("red", "green", "blue")
+
+par(mfrow=c(1,3), cex=0.5)
+for(i in 2:4){
+  plot <- boxplot(projected_data[,i] ~ projected_data$Class, 
+                  col=colors, xlab = "", 
+                  ylab="", 
+                  main = names(projected_data)[i], 
+                  xaxt = "n",  
+                  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =20)
+  text(x = 1:num_classes,
+       labels = classes,
+       par("usr")[3],
+       xpd = T,
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
+}
+
+par(mfrow=c(1,3), cex=0.5)
+for(i in 5:7){
+  plot <- boxplot(projected_data[,i] ~ projected_data$Class, 
+                  col=colors, xlab = "", 
+                  ylab="", 
+                  main = names(projected_data)[i], 
+                  xaxt = "n",  
+                  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =20)
+  text(x = 1:num_classes,
+       labels = classes,
+       par("usr")[3],
+       xpd = T,
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
+}
+
+par(mfrow=c(1,2), cex=0.5)
+for(i in 8:9){
+  plot <- boxplot(projected_data[,i] ~ projected_data$Class, 
+                  col=colors, xlab = "", 
+                  ylab="", 
+                  main = names(projected_data)[i], 
+                  xaxt = "n",  
+                  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =20)
+  text(x = 1:num_classes,
+       labels = classes,
+       par("usr")[3],
+       xpd = T,
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
+}
+```
+
+### 9 - É possível reduzir a dimensionalidade dos dados? Explique como! 
+
+Sim, é possível reduzir a dimensionalidade dos dados. Podemos fazer isso durante a transformação dos dados com a função preProcess, estipulando um valor de corte para a porcentagem cumulativa de variância da componente principal. Ou seja, serão eliminadas todas as dimensões dos dados transformados com porcentagem de variância cumulativa acima do valor de corte.
+```{r reduction, warning=FALSE, message=FALSE}
+reduced_pca_params = preProcess(beans_data, method=c("center", "scale", "pca"), thresh = .95)
+
+reduced_projected_data = predict(reduced_pca_params, beans_data)
+summary(reduced_projected_data)
+```
+Aqui utilizamos a porcentagem de 95% da variância cumulativa como corte e tivemos uma redução de três dimensões do conjunto de dados transfomado.
+
+### 10 - Analise o dataset reduzido com o auxílio do gráfico de boxplot por classe (igual ao do item 6). .  Compare com o resultado do item 6 e do item 8. Se quiser, pode gerar um gráfico de espalhamento para auxiliar na explicação.
