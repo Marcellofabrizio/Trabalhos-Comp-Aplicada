@@ -13,7 +13,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-### 0 - Limpeza do ambiente e carregamento de pacotes0
+### 0 - Limpeza do ambiente e carregamento de pacotes
 
 ```{r packs, warning=FALSE, message = FALSE}
 rm(list=ls())
@@ -181,8 +181,10 @@ correlation_matrix = cor(beans_data[1:16])
 
 strong_correlations = findCorrelation(correlation_matrix, cutoff=0.95)
 
-#Variáveis que serão removidas devido a sua alta correlação
-names(beans_data[,strong_correlations])
+print('As variavéis removidas são:')
+for(var in names(beans_data[,strong_correlations])){
+  print(var)
+}
 
 if(length(strong_correlations) > 0) {
   beans_data[,strong_correlations] = NULL
@@ -192,7 +194,10 @@ corrplot(correlation_matrix)
 
 summary(beans_data)
 ```
-Foi utilizada a função findCorrelation para obter os indices que denotam as colunas a serem removidas. Ela os obtem examinando a correlação média de cada variável em um par de variáveis, e remove a variável com correlação acima da taxa de corte. Foram removidas as variáveis com correlção maior que 0.95, ou seja, aquelas que possuiam uma alta correlação. Em alguns casos, variáveis com alta correlação acabam por não fornecer muita informação sobre o conjunto de dados estudados, ou seja, um par de varíaveis pode estar fornecendo a mesma informação. Entretanto, devemos tomar cuidado ao remover varíaveis, pois correlação não implica causalidade. De forma geral isso pode ser visto como um caso da Navalha de Occam, onde o modelo mais simples, ou seja, com menos variáveis, é preferido.  
+
+Foi utilizada a função **findCorrelation** para obter os indices que denotam as colunas a serem removidas. A função os obtem examinando a correlação média de cada variável em um par com outra variável, e remove a mesma caso a correlação calculada esteja acima da taxa de corte definida. Neste exemplo, foi definida uma taxa de 0.95 
+
+Em alguns casos, variáveis com alta correlação acabam por não fornecer muita informação sobre o conjunto de dados estudados, ou seja, um par de varíaveis pode estar fornecendo a mesma informação. Entretanto, devemos tomar cuidado ao remover varíaveis, pois correlação não implica causalidade. De forma geral isso pode ser visto como um caso da Navalha de Occam, onde o modelo mais simples, ou seja, com menos variáveis, é preferido.  
 
 ### 6 - Plote um gráfico boxplot ou de densidade por variável x classe (organize em 3 colunas). Discuta qual é a variável que teria maior poder de discriminação? Existe alguma classe que pode ser classificada mais facilmente? Justifique a sua escolha.
 
@@ -238,7 +243,10 @@ for(i in 10){
 
 do.call(grid.arrange,c(p,ncol=1))
 ```
-Analizando os resultados, percebemos que a variável ShapeFactor2 possui um alto poder de discriminação das classes, pois podemos notar a separação das médias das densidades. Essa discriminação também é vista nas variáveis roudness e Area, porem em um nível menor se comparadas a ShapeFactor2.
+
+Analizando os resultados, percebemos que a variável **ShapeFactor2** possui um alto poder de discriminação das classes, pois podemos notar a separação das médias das densidades. Essa discriminação também é vista nas variáveis **roudness** e **Area**, porém em um nível menor se comparadas a **ShapeFactor2**.
+
+A classe que aprensenta uma melhor identificação é a **Bombay**, podendo ser comprovado analisando os gráficos das variavéis **ShapeFactor1**, **ShapeFactor2** e **Area**.
 
 ### 7 - Realize a projeção do dataset utilizando PCA. Explique as características dos componentes principais estimados. O que se pode explicar sobre os componentes principais utilizando o gráfico biplot. Apresente as características básicas (summary) dos dados.
 
@@ -295,7 +303,7 @@ colors=c("red", "green", "blue")
 
 par(mfrow=c(1,3), cex=0.5)
 for(i in 2:4){
-  plot <- boxplot(projected_data[,i] ~ projected_data$Class, 
+  plot = boxplot(projected_data[,i] ~ projected_data$Class, 
                   col=colors, xlab = "", 
                   ylab="", 
                   main = names(projected_data)[i], 
@@ -314,7 +322,7 @@ for(i in 2:4){
 
 par(mfrow=c(1,3), cex=0.5)
 for(i in 5:7){
-  plot <- boxplot(projected_data[,i] ~ projected_data$Class, 
+  plot = boxplot(projected_data[,i] ~ projected_data$Class, 
                   col=colors, xlab = "", 
                   ylab="", 
                   main = names(projected_data)[i], 
@@ -333,7 +341,7 @@ for(i in 5:7){
 
 par(mfrow=c(1,2), cex=0.5)
 for(i in 8:9){
-  plot <- boxplot(projected_data[,i] ~ projected_data$Class, 
+  plot = boxplot(projected_data[,i] ~ projected_data$Class, 
                   col=colors, xlab = "", 
                   ylab="", 
                   main = names(projected_data)[i], 
@@ -353,13 +361,63 @@ for(i in 8:9){
 
 ### 9 - É possível reduzir a dimensionalidade dos dados? Explique como! 
 
-Sim, é possível reduzir a dimensionalidade dos dados. Podemos fazer isso durante a transformação dos dados com a função preProcess, estipulando um valor de corte para a porcentagem cumulativa de variância da componente principal. Ou seja, serão eliminadas todas as dimensões dos dados transformados com porcentagem de variância cumulativa acima do valor de corte.
+Sim, é possível reduzir a dimensionalidade dos dados. Podemos fazer isso durante a transformação dos dados com a função **preProcess**, estipulando um valor de corte para a porcentagem cumulativa de variância da componente principal, assim, serão eliminadas todas as dimensões dos dados transformados com porcentagem de variância cumulativa acima do valor de corte.
 ```{r reduction, warning=FALSE, message=FALSE}
 reduced_pca_params = preProcess(beans_data, method=c("center", "scale", "pca"), thresh = .95)
 
 reduced_projected_data = predict(reduced_pca_params, beans_data)
 summary(reduced_projected_data)
 ```
-Aqui utilizamos a porcentagem de 95% da variância cumulativa como corte e tivemos uma redução de três dimensões do conjunto de dados transfomado.
+Sendo utilizado a porcentagem de 95% da variância cumulativa como corte, é possível obter uma redução de três dimensões do conjunto de dados transfomado.
 
-### 10 - Analise o dataset reduzido com o auxílio do gráfico de boxplot por classe (igual ao do item 6). .  Compare com o resultado do item 6 e do item 8. Se quiser, pode gerar um gráfico de espalhamento para auxiliar na explicação.
+### 10 - Analise o dataset reduzido com o auxílio do gráfico de boxplot por classe (igual ao do item 6).  Compare com o resultado do item 6 e do item 8. Se quiser, pode gerar um gráfico de espalhamento para auxiliar na explicação. 
+
+```{r boxplots_reduced, message=FALSE, warning=FALSE}
+colors=c("red", "green", "blue")
+
+par(mfrow=c(1,3), cex=0.5)
+for(i in 2:4){
+  plot = boxplot(reduced_projected_data[,i] ~ reduced_projected_data$Class, 
+                  col=colors, xlab = "", 
+                  ylab="", 
+                  main = names(reduced_projected_data)[i], 
+                  xaxt = "n",  
+                  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =20)
+  text(x = 1:num_classes,
+       labels = classes,
+       par("usr")[3],
+       xpd = T,
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
+}
+
+par(mfrow=c(1,2), cex=0.5)
+for(i in 5:6){
+  plot = boxplot(reduced_projected_data[,i] ~ reduced_projected_data$Class, 
+                  col=colors, xlab = "", 
+                  ylab="", 
+                  main = names(reduced_projected_data)[i], 
+                  xaxt = "n",  
+                  yaxt = "n")
+  axis(side = 1, labels = FALSE)
+  axis(side = 2, las = 2, cex.axis = 0.9, font =20)
+  text(x = 1:num_classes,
+       labels = classes,
+       par("usr")[3],
+       xpd = T,
+       srt = 90,
+       adj = 1.2,
+       cex = 0.9)
+}
+```
+
+Com os dados reduzidos de dimensão, em **PC1** pode ser notado uma melhor distinção entre as classes, com exceção das classes **Barbunya** e **Horoz**, que suas medianas, 1º e 3º quartis se coincidem. Em comparação com as distribuições anteriores, em uma unica dimensão, **PC1**, pode se obter uma distinção consideravel entre a maioria das classes do problema, algo muito positivo.
+
+### 11- Após ter analisado estas informações, quais considerações você faz sobre este conjunto de dados (ou tarefa)?
+
+Com a atividade, é possível praticar e obter resultados em torno da preparação de dados: normalização, seleção de caracteristicas a partir da analíse de correlação e redução de dimensionalidade por PCA. O conjunto de dados dos feijões cabe bem na proposta do trabalho, e isso se confirma nos resultados finais de analise dos dados após passar pelos processos mencionados - é possível ver a efetividade das atividades.
+
+É interessante aplicar o conhecimento e conceitos vistos em teoria, na prática. O saldo do trabalho é extremamente positivo e de grande importância para o entendimento dos processos em Aprendizagem de Máquina.
