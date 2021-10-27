@@ -177,6 +177,8 @@ for(i in 16:16){
 ### 5 - Realize a seleção de características (correlação). Plote o gráfico de correlação. Liste as características que foram removidas. 
 ```{r correlation matrix, message=FALSE, warning=FALSE}
 
+summary(beans_data$Class)
+
 correlation_matrix = cor(beans_data[1:16])
 
 strong_correlations = findCorrelation(correlation_matrix, cutoff=0.95)
@@ -192,7 +194,7 @@ if(length(strong_correlations) > 0) {
 
 corrplot(correlation_matrix)
 
-summary(beans_data)
+summary(beans_data$Class)
 ```
 
 Foi utilizada a função **findCorrelation** para obter os indices que denotam as colunas a serem removidas. A função os obtem examinando a correlação média de cada variável em um par com outra variável, e remove a mesma caso a correlação calculada esteja acima da taxa de corte definida. Neste exemplo, foi definida uma taxa de 0.95. 
@@ -303,11 +305,13 @@ cumpro = cumsum(pca$sdev^2 / sum(pca$sdev^2))
 plot(cumpro[1:9], xlab = "Componentes Principais", ylab = "Variância Explicada", main = "Gŕafico de Variância")
 ```
 
-Interpretando o gráfico biplot resultante e as variâncias das variáveis, temos que as variáveis Area, AspectRatio e Eccentricity influenciam positivamente a proporção da variância de PC1, enquanto as demais afetam negativamente. Podemos visualizar isso analisando os vetores do gráfico biplot, onde notamos que as variáveis que afetam positivamente estão alinhadas com o eixo de PC1, apontando em direção positiva, enquanto as que afetam negativamente estão apontando para a direção negativa. Para PC2, temos que as variáveis Area, Extent, Solidity e roundness a afetam positivamente. 
+Interpretando o gráfico biplot resultante e as variâncias das variáveis, temos que as variáveis **Area**, **AspectRatio** e **Eccentricity** influenciam positivamente a proporção da variância de **PC1**, enquanto as demais afetam negativamente. Podemos visualizar isso analisando os vetores do gráfico biplot, onde notamos que as variáveis que afetam positivamente estão alinhadas com o eixo de **PC1**, apontando em direção positiva. 
 
-Nota-se que a variável Area afeta positivamente ambos PC1 e PC2. Podemos ver essa relação no gráfico, onde Area aponta em direção positva a PC1 e PC2.
+Para **PC2**, temos que as variáveis **Area**, **Extent**, **Solidity** e **roundness** a afetam positivamente. 
 
-Temos também que PC1 explica 50% da varíancia do conjunto.
+Com o gráfico vemos que as variáveis **AspectRatio** e **Eccentricity** estão mais relacionadas entre sí do que com **Area**.
+
+**PC1** explica 50% da varíancia do conjunto, enquanto **PC2** explica cerca de 20%.
 
 ### 8 - Analise o dataset projetado com o auxílio do gráfico de boxplot por classe (igual ao do item 6).  Compare com o resultado do item 6. Se quiser, pode gerar um gráfico de espalhamento para auxiliar na explicação. 
 
@@ -387,7 +391,8 @@ Sim, é possível reduzir a dimensionalidade dos dados. Podemos fazer isso duran
 reduced_pca_params = preProcess(beans_data, method=c("center", "scale", "pca"), thresh = .95)
 
 reduced_projected_data = predict(reduced_pca_params, beans_data)
-summary(reduced_projected_data)
+beans_data = data.frame(reduced_projected_data)
+summary(beans_data)
 ```
 Sendo utilizado a porcentagem de 95% da variância cumulativa como corte, é possível obter uma redução de três dimensões do conjunto de dados transfomado.
 
