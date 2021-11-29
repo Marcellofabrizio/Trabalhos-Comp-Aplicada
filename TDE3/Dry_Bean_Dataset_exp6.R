@@ -49,7 +49,7 @@ for(partition in 1:3) {
   ## Predição dos dados
   gmm.predict = predict(gmm.model, test_data)
   
-  acc_matrix[partition, 1] = confusionMatrix(gmm.predict$classification, test_labels)$overall[1]
+  acc_matrix[partition, 1] = confusionMatrix(gmm.predict$classification, test_labels)
 }
 
 acc_matrix
