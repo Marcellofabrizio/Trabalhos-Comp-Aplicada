@@ -13,9 +13,7 @@ set.seed(1)
 
 partitions = createFolds(beans_data$Class, k = 3)
 
-acc_matrix = matrix(3,3)
-
-best = -1
+results = c(0,0,0)
 
 for(partition in 1:3) {
     
@@ -49,7 +47,11 @@ for(partition in 1:3) {
   ## Predição dos dados
   gmm.predict = predict(gmm.model, test_data)
   
-  acc_matrix[partition, 1] = confusionMatrix(gmm.predict$classification, test_labels)
+  confusion_matrix = confusionMatrix(gmm.predict$classification, test_labels)
+  
+  print(confusion_matrix)
+  
+  results[partition] = confusion_matrix$overall[1]
 }
 
-acc_matrix
+mean(results)

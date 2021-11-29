@@ -13,9 +13,7 @@ set.seed(1)
 
 partitions = createFolds(beans_data$Class, k = 3)
 
-acc_matrix = matrix(3,3)
-
-best = -1
+results = c(0,0,0)
 
 for(partition in 1:3) {
   
@@ -37,11 +35,15 @@ for(partition in 1:3) {
     test_data[,strong_correlations] = NULL
   }
   
-  gmm.model = MclustDA(training_data, training_labels, modelNames = c('VVI'), verbose = FALSE)
+  gmm.model = MclustDA(training_data, training_labels, modelNames = c('VII'), verbose = FALSE)
   
-  gmm.predcition = predict(gmm.model, test_data)
+  gmm.predict = predict(gmm.model, test_data)
   
-  acc_matrix[partition, 1] = confusionMatrix(gmm.predcition$classification, test_labels)$overall[1]
+  confusion_matrix = confusionMatrix(gmm.predict$classification, test_labels)
+  
+  print(confusion_matrix)
+  
+  results[partition] = confusion_matrix$overall[1]
 }
 
-mean(acc_matrix[,1])
+mean(results)
