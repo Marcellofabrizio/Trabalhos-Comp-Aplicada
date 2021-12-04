@@ -37,3 +37,6 @@ for(partition in 1:3) {
 }
 
 mean(results)
+
+
+mapply(nMclustParams, mclust.options("emModelNames"), d = 16, G = 5)
