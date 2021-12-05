@@ -1,4 +1,4 @@
-rm(list=ls())
+rm(list = ls())
 
 library(devtools)
 install_github("vqv/ggbiplot")
@@ -14,33 +14,90 @@ library(ggfortify)
 library(ggbiplot)
 
 # Número de partições que serão criadas
-K = 5 
+K = 5
 
 set.seed(1)
 
-sensor_data = read.csv("Sensorless_drive_diagnosis.txt", sep=" ", na.strings="?", dec=".")
+sensor_data = read.csv(
+  "Sensorless_drive_diagnosis.txt",
+  sep = " ",
+  na.strings = "?",
+  dec = "."
+)
 
 str(sensor_data)
 
 sensor_data = na.omit(sensor_data)
 
 features_names = vector("list", length = length(names(sensor_data)))
-for(i in 1:length(names(sensor_data))-1) {
+for (i in 1:length(names(sensor_data)) - 1) {
   features_names[i] = str_interp("Feature${i}")
 }
 
 features_names[49] = "label"
 names(sensor_data) = features_names
 
-partitions = createFolds(sensor_data$label, k=K)
+sensor_data$label = factor(sensor_data$label)
 
-accuracies = matrix(nrow = 2, ncol = K)
+partitions = createFolds(sensor_data$label, k = K)
 
-for(partition in 1:K) {
-    
-  test_indexes = partitions[[partition]]  
-  test_data    = sensor_data[test_indexes, -49]
-  
+accuracies = matrix(nrow = K, ncol = 4)
+
+for (partition in 1:K) {
+  test_indexes = partitions[[partition]]
   training_indexes = unlist(partitions[-partition])
-  training_data    = sensor_data[training_indexes -49]
+  
+  test_data    = sensor_data[test_indexes,-49]
+  test_labels  = sensor_data[test_indexes, 49]
+  
+  training_data    = sensor_data[training_indexes,-49]
+  training_labels  = sensor_data[training_indexes, 49]
+  
+  ##Remoção dos outliers
+  outliers = c()
+  for (i in 1:length(training_data)) {
+    outliers = c(outliers, which(training_data[, i] %in% boxplot.stats(training_data[, i])$out))
+  }
+  
+  outliers = unique(outliers)
+  training_data   = training_data[-outliers, ]
+  training_labels = training_labels[-outliers]
+  
+  ## Normalização
+  normalization_parameters = preProcess(training_data, method = c("center", "scale"))
+  training_data            = predict(normalization_parameters, training_data)
+  test_data                = predict(normalization_parameters, test_data)
+  rm(normalization_parameters)
+  
+  
+  ## Seleção de caracteristicas
+  correlation_matrix = cor(training_data)
+  strong_correlations = findCorrelation(correlation_matrix, cutoff = 0.95)
+  
+  if (length(strong_correlations) > 0) {
+    training_data[, strong_correlations] = NULL
+    test_data[, strong_correlations] = NULL
+  }
+  
+  ## Projeção e Aplicação do PCA
+  training_pca  = preProcess(training_data, method = c("center", "scale", "pca"), thresh = .98)
+  training_data = predict(training_pca, training_data)
+  
+  test_pca  = preProcess(test_data, method = c("center", "scale", "pca"),thresh = .98)
+  test_data = predict(test_pca, test_data)
+  
+  ## Treinamento de dados utilizando modelo de misturas gaussianas
+  
+  methods = c("VII", "VVI", "EEE", "VVV")
+  
+  # for (method in 1:4) {
+  gmm.model = MclustDA(training_data, training_labels, modelNames = methods, verbose = FALSE)
+  
+  ## Predição dos dados
+  gmm.predict = predict(gmm.model, test_data)
+  
+  confusion_matrix = confusionMatrix(gmm.predict$classification, test_labels)
+  
+  accuracies[partition, 1] = confusion_matrix$overall[1]
+  # }
 }
