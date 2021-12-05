@@ -1,18 +1,8 @@
 rm(list = ls())
 
-library(devtools)
-install_github("vqv/ggbiplot")
-library(ggplot2)
-library(gridExtra)
-library(GGally)
-library(grid)
 library(stringr)
-library(corrplot)
 library(caret)
 library(mclust)
-library(ggfortify)
-library(ggbiplot)
-
 # Número de partições que serão criadas
 K = 5
 
@@ -37,7 +27,7 @@ for (i in 1:length(names(sensor_data)) - 1) {
 features_names[49] = "label"
 names(sensor_data) = features_names
 
-sensor_data$label = factor(sensor_data$label)
+sensor_data$label = factor(sensor_data$label, levels = 1:11)
 
 partitions = createFolds(sensor_data$label, k = K)
 
@@ -60,10 +50,10 @@ for (partition in 1:K) {
   }
   
   outliers = unique(outliers)
-  training_data   = training_data[-outliers, ]
-  training_labels = training_labels[-outliers]
+  #raining_data   = training_data[-outliers, ]
+  t#raining_labels = training_labels[-outliers]
   
-  ## Normalização
+  ## Normalização por Z-Score
   normalization_parameters = preProcess(training_data, method = c("center", "scale"))
   training_data            = predict(normalization_parameters, training_data)
   test_data                = predict(normalization_parameters, test_data)
@@ -88,16 +78,16 @@ for (partition in 1:K) {
   
   ## Treinamento de dados utilizando modelo de misturas gaussianas
   
-  methods = c("VII", "VVI", "EEE", "VVV")
+  methods = c("VII", "VVI")
   
   # for (method in 1:4) {
-  gmm.model = MclustDA(training_data, training_labels, modelNames = methods, verbose = FALSE)
+  gmm.model = MclustDA(training_data, training_labels, modelNames = methods)
   
   ## Predição dos dados
   gmm.predict = predict(gmm.model, test_data)
   
   confusion_matrix = confusionMatrix(gmm.predict$classification, test_labels)
-  
   accuracies[partition, 1] = confusion_matrix$overall[1]
-  # }
+  
 }
+
