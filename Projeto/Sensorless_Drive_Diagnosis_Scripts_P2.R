@@ -5,7 +5,7 @@ library(caret)
 library(mclust)
 library(class)
 # Número de partições que serão criadas
-K = 5
+K = 1
 
 set.seed(1)
 
@@ -45,14 +45,14 @@ for (partition in 1:K) {
   training_labels  = sensor_data[training_indexes, 49]
   
   ##Remoção dos outliers
-  outliers = c()
-  for (i in 1:length(training_data)) {
-    outliers = c(outliers, which(training_data[, i] %in% boxplot.stats(training_data[, i])$out))
-  }
-  
-  outliers = unique(outliers)
-  #raining_data   = training_data[-outliers, ]
-  #training_labels = training_labels[-outliers]
+  # outliers = c()
+  # for (i in 1:length(training_data)) {
+  #   outliers = c(outliers, which(training_data[, i] %in% boxplot.stats(training_data[, i])$out))
+  # }
+  # 
+  # outliers = unique(outliers)
+  # training_data   = training_data[-outliers, ]
+  # training_labels = training_labels[-outliers]
   
   ## Normalização por Z-Score
   normalization_parameters = preProcess(training_data, method = c("center", "scale"))
@@ -64,7 +64,7 @@ for (partition in 1:K) {
   ## Seleção de caracteristicas
   correlation_matrix = cor(training_data)
   strong_correlations = findCorrelation(correlation_matrix, cutoff = 0.95)
-  
+
   if (length(strong_correlations) > 0) {
     training_data[, strong_correlations] = NULL
     test_data[, strong_correlations] = NULL
@@ -74,30 +74,32 @@ for (partition in 1:K) {
   # training_pca  = preProcess(training_data, method = c("center", "scale", "pca"), thresh = .98)
   # training_data = predict(training_pca, training_data)
   # 
-  # test_pca  = preProcess(test_data, method = c("center", "scale", "pca"),thresh = .98)
+  # test_pca  = preProcess(test_data, method = c("center", "scale", "pca"), thresh = .98)
   # test_data = predict(test_pca, test_data)
-  
+  # 
   ## Treinamento de dados utilizando modelo de misturas gaussianas
   
-  # methods = c("VII", "VVI")
-  # 
-  # for (method in 1:4) {
-  #   gmm.model = MclustDA(training_data, training_labels, modelNames = c(methods[method]))
-  #   
-  #   ## Predição dos dados
-  #   gmm.predict = predict(gmm.model, test_data)
-  #   
-  #   confusion_matrix = confusionMatrix(gmm.predict$classification, test_labels)
-  #   accuracies[partition, method] = confusion_matrix$overall[1]
+  methods = c("VII", "VVI", "VVE")
+
+  # for (method in 1:3) {
+    gmm.model = MclustDA(training_data, training_labels, modelNames = c("VVE"))
+
+    ## Predição dos dados
+    gmm.predict = predict(gmm.model, test_data)
+
+    confusion_matrix = confusionMatrix(gmm.predict$classification, test_labels)
+    accuracies[partition, 1] = confusion_matrix$overall[1]
   # }
   
-  for(k_nn in c(5, 7, 13, 17, 19, 23, 29, 31, 37, 41, 47, 51)){
-    pr <- knn(training_data, test_data, cl=training_labels, k=k_nn)
-    
-    tb <- table(pr,test_labels)
-    
-    accuracy <- function(x){sum(diag(x)/(sum(rowSums(x)))) * 100}
-    accuracies[partition, k_nn] = accuracy(tb)
-  }
+  # i = 4
+  # for(k_nn in c(19)){
+  #   pr <- knn(training_data, test_data, cl=training_labels, k=k_nn)
+  #   
+  #   tb <- table(pr,test_labels)
+  #   
+  #   accuracy <- function(x){sum(diag(x)/(sum(rowSums(x))))}
+  #   accuracies[partition, i] = accuracy(tb)
+  #   i = i + 1
+  # }
 }
 
