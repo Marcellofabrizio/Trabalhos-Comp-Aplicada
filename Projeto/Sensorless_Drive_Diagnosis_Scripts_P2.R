@@ -5,7 +5,7 @@ library(caret)
 library(mclust)
 library(class)
 # Número de partições que serão criadas
-K = 1
+K = 5
 
 set.seed(1)
 
@@ -64,7 +64,7 @@ for (partition in 1:K) {
   ## Seleção de caracteristicas
   correlation_matrix = cor(training_data)
   strong_correlations = findCorrelation(correlation_matrix, cutoff = 0.95)
-
+  
   if (length(strong_correlations) > 0) {
     training_data[, strong_correlations] = NULL
     test_data[, strong_correlations] = NULL
@@ -79,27 +79,28 @@ for (partition in 1:K) {
   # 
   ## Treinamento de dados utilizando modelo de misturas gaussianas
   
-  methods = c("VII", "VVI", "VVE")
-
-  # for (method in 1:3) {
+  methods = c("EEE", "VEE")
+  
+  for (method in 1:3) {
     gmm.model = MclustDA(training_data, training_labels, modelNames = c("VVE"))
-
+    
     ## Predição dos dados
     gmm.predict = predict(gmm.model, test_data)
-
+    
     confusion_matrix = confusionMatrix(gmm.predict$classification, test_labels)
-    accuracies[partition, 1] = confusion_matrix$overall[1]
-  # }
+    accuracies[partition, 1] = confusion_matrix$overall[1]    #
+    write.table(accuracies, 'results1.csv' ,sep = ';', dec = ',')
+  }
   
-  # i = 4
-  # for(k_nn in c(19)){
-  #   pr <- knn(training_data, test_data, cl=training_labels, k=k_nn)
-  #   
-  #   tb <- table(pr,test_labels)
-  #   
-  #   accuracy <- function(x){sum(diag(x)/(sum(rowSums(x))))}
-  #   accuracies[partition, i] = accuracy(tb)
-  #   i = i + 1
-  # }
+  i = 1
+  for(k_nn in c(211, 223)){
+    pr <- knn(training_data, test_data, cl=training_labels, k=k_nn)
+    
+    tb <- table(pr,test_labels)
+    
+    accuracy <- function(x){sum(diag(x)/(sum(rowSums(x))))}
+    accuracies[partition, i] = accuracy(tb)
+    i = i + 1
+  }
 }
 
