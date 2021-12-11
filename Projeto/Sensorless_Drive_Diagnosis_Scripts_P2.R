@@ -87,18 +87,18 @@ for (partition in 1:K) {
   confusion_matrix = confusionMatrix(gmm.predict$classification, test_labels)
   accuracies[partition, method] = confusion_matrix$overall[1]   
   
-  beginning = proc.time()
-  bagging.model = train(training_data, training_labels, trControl = trainControl(classProbs = TRUE),    
-                            method="treebag")
-  print("Tempo de treino:")
-  print(proc.time() - beggining)
-  
-  inicio = proc.time()
-  bagging.predict = predict(bagging.model, test_data)
-  print("Tempo de predição:")
-  print(proc.time() - ptm)
-  
-  accuracies[partition, 2] = confusionMatrix(table(bagging.predict, test_labels))$overall[1]
+  # beginning = proc.time()
+  # bagging.model = train(training_data, training_labels, trControl = trainControl(classProbs = TRUE),    
+  #                           method="treebag")
+  # print("Tempo de treino:")
+  # print(proc.time() - beggining)
+  # 
+  # inicio = proc.time()
+  # bagging.predict = predict(bagging.model, test_data)
+  # print("Tempo de predição:")
+  # print(proc.time() - ptm)
+  # 
+  # accuracies[partition, 2] = confusionMatrix(table(bagging.predict, test_labels))$overall[1]
   
   
   write.table(accuracies, 'results.csv' ,sep = ';', dec = ',')
