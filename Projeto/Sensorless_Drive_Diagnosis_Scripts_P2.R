@@ -28,7 +28,9 @@ for (i in 1:length(names(sensor_data)) - 1) {
 features_names[49] = "label"
 names(sensor_data) = features_names
 
-sensor_data$label = factor(sensor_data$label, levels = 1:11)
+# sensor_data$label = factor(sensor_data$label, levels = 1:11)
+sensor_data$label = make.names(factor(sensor_data$label, levels = c('1', '2', '3', '4', '5', '6', '7', '8',
+                                                                    '9', '10', '11')))
 
 partitions = createFolds(sensor_data$label, k = K)
 
@@ -58,7 +60,7 @@ for (partition in 1:K) {
   normalization_parameters = preProcess(training_data, method = c("center", "scale"))
   training_data            = predict(normalization_parameters, training_data)
   test_data                = predict(normalization_parameters, test_data)
-  rm(normalization_parameters)
+  # rm(normalization_parameters)
   
   
   ## Seleção de caracteristicas
@@ -71,36 +73,35 @@ for (partition in 1:K) {
   }
   
   ## Projeção e Aplicação do PCA
-  # training_pca  = preProcess(training_data, method = c("center", "scale", "pca"), thresh = .98)
-  # training_data = predict(training_pca, training_data)
-  # 
+  training_pca  = preProcess(training_data, method = c("center", "scale", "pca"), thresh = .98)
+  training_data = predict(training_pca, training_data)
+  
   # test_pca  = preProcess(test_data, method = c("center", "scale", "pca"), thresh = .98)
-  # test_data = predict(test_pca, test_data)
-  # 
+  # test_data = predict(training_pca, test_data)  #
   ## Treinamento de dados utilizando modelo de misturas gaussianas
   
-  methods = c("EEE", "VEE")
+  gmm.model = MclustDA(training_data, training_labels, 8, modelNames = c('VVV'))
+  ## Predição dos dados
+  gmm.predict = predict(gmm.model, test_data)
   
-  for (method in 1:3) {
-    gmm.model = MclustDA(training_data, training_labels, modelNames = c("VVE"))
-    
-    ## Predição dos dados
-    gmm.predict = predict(gmm.model, test_data)
-    
-    confusion_matrix = confusionMatrix(gmm.predict$classification, test_labels)
-    accuracies[partition, 1] = confusion_matrix$overall[1]    #
-    write.table(accuracies, 'results1.csv' ,sep = ';', dec = ',')
-  }
+  confusion_matrix = confusionMatrix(gmm.predict$classification, test_labels)
+  accuracies[partition, method] = confusion_matrix$overall[1]   
   
-  i = 1
-  for(k_nn in c(211, 223)){
-    pr <- knn(training_data, test_data, cl=training_labels, k=k_nn)
-    
-    tb <- table(pr,test_labels)
-    
-    accuracy <- function(x){sum(diag(x)/(sum(rowSums(x))))}
-    accuracies[partition, i] = accuracy(tb)
-    i = i + 1
-  }
+  beginning = proc.time()
+  bagging.model = train(training_data, training_labels, trControl = trainControl(classProbs = TRUE),    
+                            method="treebag")
+  print("Tempo de treino:")
+  print(proc.time() - beggining)
+  
+  inicio = proc.time()
+  bagging.predict = predict(bagging.model, test_data)
+  print("Tempo de predição:")
+  print(proc.time() - ptm)
+  
+  accuracies[partition, 2] = confusionMatrix(table(bagging.predict, test_labels))$overall[1]
+  
+  
+  write.table(accuracies, 'results.csv' ,sep = ';', dec = ',')
 }
+
 
