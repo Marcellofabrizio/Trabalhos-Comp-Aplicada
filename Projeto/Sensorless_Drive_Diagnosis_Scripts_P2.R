@@ -72,33 +72,78 @@ for (partition in 1:K) {
     test_data[, strong_correlations] = NULL
   }
   
-  ## Projeção e Aplicação do PCA
-  training_pca  = preProcess(training_data, method = c("center", "scale", "pca"), thresh = .98)
-  training_data = predict(training_pca, training_data)
+  ##########################################
+  ##  GMM com 8 gausseanas
+  ##########################################
   
-  # test_pca  = preProcess(test_data, method = c("center", "scale", "pca"), thresh = .98)
-  # test_data = predict(training_pca, test_data)  #
-  ## Treinamento de dados utilizando modelo de misturas gaussianas
+  beginning = proc.time()
+  gmm.model = MclustDA(training_data, training_labels, 8, modelNames = c('VVV'), verbose = FALSE)
+  print("Tempo de treino:")
   
-  gmm.model = MclustDA(training_data, training_labels, 8, modelNames = c('VVV'))
   ## Predição dos dados
+
+  gmm.predict = predict(gmm.model, test_data)
+
+  result = proc.time() - beginning
+  
+  accuracies[partition, 1] = confusionMatrix(table(gmm.predict$classification, test_labels))$overall[1]   
+  
+  accuracies[partition, 2] = result['elapsed']
+  
+  accuracies[partition, 3] = mapply(nMclustParams, mclust.options("emModelNames"),
+                                    d = length(training_data), G = 8)['VVV']
+  
+  ##########################################
+  ##  GMM com 12 gausseanas
+  ##########################################
+  
+  beginning = proc.time()
+  gmm.model = MclustDA(training_data, training_labels, 12, modelNames = c('VVV'), verbose = FALSE)
+  
+  ## Predição dos dados
+  
   gmm.predict = predict(gmm.model, test_data)
   
-  confusion_matrix = confusionMatrix(gmm.predict$classification, test_labels)
-  accuracies[partition, method] = confusion_matrix$overall[1]   
+  result = proc.time() - beginning
   
-  # beginning = proc.time()
-  # bagging.model = train(training_data, training_labels, trControl = trainControl(classProbs = TRUE),    
-  #                           method="treebag")
-  # print("Tempo de treino:")
-  # print(proc.time() - beggining)
-  # 
-  # inicio = proc.time()
-  # bagging.predict = predict(bagging.model, test_data)
-  # print("Tempo de predição:")
-  # print(proc.time() - ptm)
-  # 
-  # accuracies[partition, 2] = confusionMatrix(table(bagging.predict, test_labels))$overall[1]
+  accuracies[partition, 4] = confusionMatrix(table(gmm.predict$classification, test_labels))$overall[1]    
+  
+  accuracies[partition, 5] = result['elapsed']
+  
+  accuracies[partition, 6] = mapply(nMclustParams, mclust.options("emModelNames"),
+                                    d = length(training_data), G = 12)['VVV']
+  
+  
+  ##########################################
+  ##  GMM com EM
+  ##########################################
+  
+  beginning = proc.time()
+  gmm.model = MclustDA(training_data, training_labels, modelNames = c('VVV'), verbose = FALSE)
+
+  ## Predição dos dados
+  
+  gmm.predict = predict(gmm.model, test_data)
+  
+  result = proc.time() - beginning
+  
+  accuracies[partition, 7] = confusionMatrix(table(gmm.predict$classification, test_labels))$overall[1]  
+  
+  accuracies[partition, 8] = result['elapsed']
+  
+  accuracies[partition, 9] = mapply(nMclustParams, mclust.options("emModelNames"),
+                                    d = length(training_data), G = 5)['VVV']
+  
+  beginning = proc.time()
+  bagging.model = train(training_data, training_labels, trControl = trainControl(classProbs = TRUE),
+                            method="treebag")
+  
+  bagging.predict = predict(bagging.model, test_data)
+  
+  result = proc.time() - beginning
+
+  accuracies[partition, 10] = confusionMatrix(table(bagging.predict, test_labels))$overall[1]
+  accuracies[partition, 11] = result['elapsed']
   
   
   write.table(accuracies, 'results.csv' ,sep = ';', dec = ',')
